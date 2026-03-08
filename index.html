@@ -722,6 +722,11 @@
 </head>
 <body>
 
+<!-- AUDIO ELEMENT -->
+<audio id="bg-audio" loop>
+  <source src="morat.mp3" type="audio/mpeg">
+</audio>
+
 <!-- ═══════════════════════════════════════ -->
 <!-- SCREEN 1: LANDING                       -->
 <!-- ═══════════════════════════════════════ -->
@@ -941,6 +946,29 @@
 </div>
 
 <script>
+  // ─── AUDIO SETUP ───
+  const audio = document.getElementById('bg-audio');
+  audio.currentTime = 10;
+  audio.volume = 0.5;
+
+  // Intentar reproducción automática
+  const playAudio = () => {
+    audio.play().catch(() => {
+      console.log('Autoplay no permitido, esperando interacción del usuario');
+    });
+  };
+
+  // Reproducir al cargar la página
+  window.addEventListener('load', playAudio);
+
+  // También intentar al hacer clic en cualquier parte
+  document.addEventListener('click', () => {
+    if (audio.paused) playAudio();
+  }, { once: true });
+
+  // Asegurar que se repite
+  audio.loop = true;
+
   // ─── COMPILE ANIMATION ───
   const lines = [
     { prompt: '$', text: 'bash sorpresa_especial.sh', delay: 300, ok: false },
