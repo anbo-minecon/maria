@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>acceso_exclusivo.exe</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d14;
+    --bg2: #111120;
+    --pink: #ff6eb4;
+    --pink-soft: #ffb3d9;
+    --purple: #b57bee;
+    --purple-deep: #7c3aed;
+    --purple-glow: #9d4edd;
+    --teal: #4ecdc4;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --code-green: #a8ff78;
+    --card: #16162a;
+    --border: #2a2a4a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── SCREEN 1: LANDING ─── */
+  #screen-landing {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(181,123,238,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(181,123,238,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+  }
+  @keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 40px; }
+  }
+
+  .noise-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px;
+  }
+
+  .glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .orb-1 { width: 400px; height: 400px; background: rgba(181,123,238,0.15); top: -100px; left: -100px; }
+  .orb-2 { width: 300px; height: 300px; background: rgba(255,110,180,0.12); bottom: -80px; right: -80px; }
+  .orb-3 { width: 200px; height: 200px; background: rgba(78,205,196,0.08); top: 50%; left: 60%; }
+
+  .landing-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    max-width: 600px;
+    padding: 40px;
+  }
+
+  .file-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(181,123,238,0.1);
+    border: 1px solid rgba(181,123,238,0.3);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--purple);
+    margin-bottom: 32px;
+    letter-spacing: 0.5px;
+  }
+  .file-badge::before { content: "●"; color: var(--pink); font-size: 10px; }
+
+  .landing-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(42px, 8vw, 72px);
+    font-weight: 700;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, var(--pink-soft) 40%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+  }
+
+  .landing-sub {
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 48px;
+    line-height: 1.8;
+  }
+  .landing-sub .comment { color: #4a4a6a; }
+  .landing-sub .string { color: var(--pink); }
+  .landing-sub .keyword { color: var(--purple); }
+
+  .btn-run {
+    position: relative;
+    background: linear-gradient(135deg, var(--purple-deep), var(--pink));
+    border: none;
+    border-radius: 12px;
+    padding: 18px 48px;
+    font-family: 'Fira Code', monospace;
+    font-size: 16px;
+    color: #fff;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 40px rgba(181,123,238,0.3), 0 4px 20px rgba(0,0,0,0.4);
+    overflow: hidden;
+  }
+  .btn-run::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    border-radius: 12px;
+  }
+  .btn-run::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, var(--pink), var(--purple), var(--pink));
+    border-radius: 14px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn-run:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 60px rgba(255,110,180,0.4), 0 8px 30px rgba(0,0,0,0.5);
+  }
+  .btn-run:hover::after { opacity: 1; }
+
+  .btn-blink {
+    display: inline-block;
+    width: 10px;
+    height: 16px;
+    background: rgba(255,255,255,0.8);
+    margin-left: 8px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* Floating code snippets */
+  .float-code {
+    position: absolute;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    color: rgba(181,123,238,0.2);
+    pointer-events: none;
+    white-space: nowrap;
+    animation: floatCode 15s ease-in-out infinite;
+  }
+  @keyframes floatCode {
+    0%,100% { transform: translateY(0) rotate(-2deg); opacity: 0.15; }
+    50% { transform: translateY(-20px) rotate(2deg); opacity: 0.3; }
+  }
+
+  /* ─── SCREEN 2: COMPILER ANIMATION ─── */
+  #screen-compile {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    position: relative;
+  }
+
+  .terminal {
+    background: #0a0a12;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: min(560px, 90vw);
+    overflow: hidden;
+    box-shadow: 0 0 80px rgba(181,123,238,0.15), 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  .terminal-bar {
+    background: #1a1a2e;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .terminal-title {
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .terminal-body {
+    padding: 28px 28px 32px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 2;
+    min-height: 280px;
+  }
+
+  .t-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.4s ease;
+  }
+  .t-line.show { opacity: 1; transform: translateX(0); }
+
+  .t-prompt { color: var(--purple); font-weight: 600; }
+  .t-text { color: #c8c8e8; }
+  .t-ok { color: var(--code-green); margin-left: auto; font-size: 11px; }
+  .t-heart { color: var(--pink); }
+  .t-loading { color: var(--muted); }
+
+  .progress-bar-wrap {
+    margin: 16px 0 8px;
+    height: 4px;
+    background: rgba(181,123,238,0.1);
+    border-radius: 99px;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .progress-bar-wrap.show { opacity: 1; }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--pink));
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 8px var(--pink);
+  }
+
+  .access-msg {
+    text-align: center;
+    margin-top: 20px;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .access-msg.show { opacity: 1; }
+  .access-msg span {
+    font-family: 'Fira Code', monospace;
+    font-size: 18px;
+    color: var(--pink);
+    text-shadow: 0 0 20px rgba(255,110,180,0.6);
+  }
+
+  /* ─── SCREEN 3: MAIN SURPRISE ─── */
+  #screen-main {
+    display: none;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Floating hearts */
+  .heart-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .fheart {
+    position: absolute;
+    font-size: 16px;
+    animation: floatHeart linear infinite;
+    opacity: 0;
+    pointer-events: none;
+  }
+  @keyframes floatHeart {
+    0% { transform: translateY(100vh) scale(0.5) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.3; }
+    100% { transform: translateY(-20vh) scale(1.2) rotate(30deg); opacity: 0; }
+  }
+
+  /* Stars */
+  .star {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: 0.1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.5); }
+  }
+
+  .main-content {
+    position: relative;
+    z-index: 10;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 24px 80px;
+  }
+
+  /* Header */
+  .main-header {
+    text-align: center;
+    margin-bottom: 60px;
+    opacity: 0;
+    animation: fadeUp 1s 0.3s forwards;
+  }
+  .main-tag {
+    display: inline-block;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    color: var(--purple);
+    border: 1px solid rgba(181,123,238,0.3);
+    border-radius: 4px;
+    padding: 4px 12px;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 48px);
+    line-height: 1.2;
+    background: linear-gradient(135deg, #fff 0%, var(--pink-soft) 50%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .main-subtitle-code {
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* PHOTOS LAYOUT */
+  .photos-section {
+    margin-bottom: 70px;
+    opacity: 0;
+    animation: fadeUp 1s 0.6s forwards;
+  }
+
+  .photos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .photo-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .photo-center-row {
+    display: flex;
+    justify-content: center;
+  }
+
+  .photo-bottom-row {
+    display: flex;
+    justify-content: center;
+  }
+
+  .photo-frame {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    background: linear-gradient(var(--card), var(--card)) padding-box,
+                linear-gradient(135deg, var(--purple), var(--pink)) border-box;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    cursor: pointer;
+  }
+  .photo-frame:hover {
+    transform: scale(1.03) rotate(-1deg);
+    box-shadow: 0 0 40px rgba(255,110,180,0.3), 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .photo-small {
+    width: 100%;
+    aspect-ratio: 1;
+  }
+  .photo-large {
+    width: 300px;
+    height: 340px;
+    flex-shrink: 0;
+  }
+  .photo-bottom {
+    width: 240px;
+    aspect-ratio: 1;
+    flex-shrink: 0;
+  }
+
+  .photo-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    background: linear-gradient(135deg, #1a1a2e, #16162a);
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .photo-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    inset: 0;
+  }
+
+  .photo-placeholder-icon { font-size: 28px; }
+
+  .photo-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 20px 12px 10px;
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .corner-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,110,180,0.4);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: var(--pink);
+    backdrop-filter: blur(4px);
+  }
+
+  .photo-shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,110,180,0.05) 50%, transparent 60%);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0%,100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+  }
+
+  /* Message */
+  .message-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 1s 0.9s forwards;
+  }
+  .message-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--purple), var(--pink), var(--purple));
+    background-size: 200% 100%;
+    animation: gradientSlide 3s linear infinite;
+  }
+  @keyframes gradientSlide {
+    0% { background-position: 0% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .message-section::after {
+    content: '';
+    position: absolute;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,110,180,0.06), transparent 70%);
+    top: -100px; right: -100px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .msg-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 4vw, 32px);
+    font-style: italic;
+    color: var(--pink-soft);
+    margin-bottom: 28px;
+    text-shadow: 0 0 30px rgba(255,110,180,0.3);
+  }
+
+  .msg-body {
+    font-size: 16px;
+    line-height: 2;
+    color: #c0c0d8;
+    margin-bottom: 32px;
+  }
+
+  .sql-block {
+    background: #0a0a12;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--pink);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    margin: 20px 0;
+    line-height: 1.8;
+  }
+  .sql-kw { color: var(--purple); font-weight: 600; }
+  .sql-fn { color: #66d9e8; }
+  .sql-str { color: var(--code-green); }
+  .sql-op { color: var(--pink); }
+
+  /* Code poems */
+  .poems-section {
+    opacity: 0;
+    animation: fadeUp 1s 1.2s forwards;
+    margin-bottom: 40px;
+  }
+
+  .poems-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .poem-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .poem-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(181,123,238,0.15);
+  }
+
+  .poem-header {
+    background: #1a1a2e;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .poem-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  .poem-dot-p { background: #ff5f57; }
+  .poem-dot-y { background: #febc2e; }
+  .poem-dot-g { background: #28c840; }
+
+  .poem-body {
+    padding: 20px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 2;
+  }
+  .c-kw { color: #ff79c6; }
+  .c-var { color: #bd93f9; }
+  .c-bool { color: #50fa7b; }
+  .c-op { color: var(--pink); }
+  .c-cmt { color: #6272a4; font-style: italic; }
+  .c-str { color: #f1fa8c; }
+  .sql-kw2 { color: #8be9fd; font-weight: 600; }
+  .sql-tbl { color: #ffb86c; }
+
+  /* Final section */
+  .final-section {
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 1s 1.5s forwards;
+    padding: 40px 0;
+  }
+
+  .final-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 3vw, 26px);
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.7;
+    max-width: 600px;
+    margin: 0 auto 40px;
+    position: relative;
+  }
+  .final-quote::before {
+    content: '"';
+    font-size: 80px;
+    color: rgba(181,123,238,0.15);
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    font-family: 'Playfair Display', serif;
+    line-height: 1;
+  }
+  .final-quote em {
+    color: var(--pink-soft);
+    font-style: normal;
+  }
+
+  .btn-fav {
+    background: transparent;
+    border: 2px solid rgba(255,110,180,0.5);
+    border-radius: 12px;
+    padding: 16px 40px;
+    font-family: 'Fira Code', monospace;
+    font-size: 15px;
+    color: var(--pink-soft);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-fav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,110,180,0.15), rgba(181,123,238,0.15));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn-fav:hover {
+    border-color: var(--pink);
+    box-shadow: 0 0 30px rgba(255,110,180,0.25);
+    transform: scale(1.03);
+  }
+  .btn-fav:hover::before { opacity: 1; }
+  .btn-fav.saved {
+    border-color: var(--code-green);
+    color: var(--code-green);
+    box-shadow: 0 0 30px rgba(168,255,120,0.2);
+  }
+
+  .section-title {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--purple);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hidden { display: none !important; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .message-section { padding: 32px 24px; }
+    .photo-large { width: 100%; max-width: 300px; height: 280px; }
+    .photo-bottom { width: 180px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SCREEN 1: LANDING                       -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-landing">
+  <div class="grid-bg"></div>
+  <div class="noise-overlay"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+
+  <!-- Floating code snippets -->
+  <div class="float-code" style="top:10%;left:5%;animation-delay:0s">const amor = true;</div>
+  <div class="float-code" style="top:20%;right:8%;animation-delay:3s">function sonreir() {}</div>
+  <div class="float-code" style="top:60%;left:3%;animation-delay:6s">return felicidad;</div>
+  <div class="float-code" style="top:75%;right:5%;animation-delay:2s">while(existes) { ❤️ }</div>
+  <div class="float-code" style="top:40%;left:2%;animation-delay:8s">import { amor } from 'tú'</div>
+  <div class="float-code" style="top:85%;left:20%;animation-delay:4s">// TODO: siempre</div>
+  <div class="float-code" style="top:30%;right:3%;animation-delay:7s">git commit -m "💜"</div>
+
+  <div class="landing-content">
+    <div class="file-badge">💜 acceso_exclusivo.exe — v1.0.0</div>
+
+    <h1 class="landing-title">Acceso<br>exclusivo</h1>
+
+    <p class="landing-sub">
+      <span class="comment">// Solo una programadora increíble</span><br>
+      <span class="keyword">if</span> (eres_<span class="string">"increíble"</span>) {<br>
+      &nbsp;&nbsp;&nbsp;ejecutar_sorpresa();<br>
+      }
+    </p>
+
+    <button class="btn-run" onclick="startCompile()">
+      ▶ Ejecutar sorpresa <span class="btn-blink"></span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SCREEN 2: COMPILE ANIMATION             -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-compile" style="display:none">
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <div class="terminal-title">sorpresa_especial.sh</div>
+    </div>
+    <div class="terminal-body" id="terminal-body">
+      <!-- Lines injected by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SCREEN 3: MAIN SURPRISE                 -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-main" style="display:none">
+  <div class="heart-container" id="heart-container"></div>
+
+  <div class="main-content">
+
+    <!-- HEADER -->
+    <div class="main-header">
+      <div class="main-tag">// archivo: para_ti.love</div>
+      <h1 class="main-title">Para la programadora<br>más increíble que conozco</h1>
+      <p class="main-subtitle-code">compiled with love · no errors found · ❤️</p>
+    </div>
+
+    <!-- PHOTOS -->
+    <div class="photos-section">
+      <div class="section-title">gallery.jpg</div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;align-items:center;max-width:680px;margin:0 auto;">
+
+        <!-- Top row: 2 small photos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:500px;">
+
+          <div class="photo-frame photo-small">
+            <div class="photo-inner">
+              <img src="foto_01.jpeg" alt="foto 1">
+              <div class="photo-shimmer"></div>
+              <div class="corner-badge">img_01</div>
+            </div>
+          </div>
+
+          <div class="photo-frame photo-small">
+            <div class="photo-inner">
+              <img src="foto_02.jpeg" alt="foto 2">
+              <div class="photo-shimmer"></div>
+              <div class="corner-badge">img_02</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Center: Main large photo -->
+        <div class="photo-frame photo-large" style="width:100%;max-width:400px;">
+          <div class="photo-inner" style="height:360px;">
+            <img src="foto_04.jpeg" alt="foto principal">
+            <div class="photo-shimmer"></div>
+            <div class="corner-badge">⭐ main</div>
+          </div>
+        </div>
+
+        <!-- Bottom: small photo centered -->
+        <div class="photo-frame photo-bottom" style="width:100%;max-width:260px;">
+          <div class="photo-inner" style="height:240px;">
+            <img src="foto_03.jpeg" alt="foto 3">
+            <div class="photo-shimmer"></div>
+            <div class="corner-badge">img_03</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MESSAGE -->
+    <div class="message-section">
+      <p class="msg-title">"Porque el mejor código lo escribes tú"</p>
+      <div class="msg-body">
+        <p>Dicen que el código perfecto no existe…<br>
+        pero cada vez que te veo siento que alguien lo compiló <em style="color:var(--pink-soft)">muy bien.</em></p>
+        <br>
+        <p>Si mi vida fuera una base de datos,<br>
+        tú serías la tabla principal.</p>
+        <br>
+        <p>Y si tuviera que hacer una consulta SQL, sería algo así:</p>
+      </div>
+
+      <div class="sql-block">
+        <span class="sql-kw">SELECT</span> <span class="sql-fn">sonrisa</span><br>
+        <span class="sql-kw">FROM</span> <span style="color:#ffb86c">tu_corazon</span><br>
+        <span class="sql-kw">WHERE</span> existencia <span class="sql-op">=</span> <span class="sql-str">'perfecta'</span>;
+      </div>
+
+      <div class="msg-body">
+        <p>Porque desde que apareciste en mi sistema,<br>
+        todo funciona <em style="color:var(--pink-soft)">mucho mejor.</em></p>
+      </div>
+    </div>
+
+    <!-- CODE POEMS -->
+    <div class="poems-section">
+      <div class="section-title">love_poems.js</div>
+      <div class="poems-grid">
+
+        <div class="poem-card">
+          <div class="poem-header">
+            <div class="poem-dot poem-dot-p"></div>
+            <div class="poem-dot poem-dot-y"></div>
+            <div class="poem-dot poem-dot-g"></div>
+            <span style="margin-left:8px;">poem_01.js</span>
+          </div>
+          <div class="poem-body">
+            <span class="c-kw">if</span> (tu_sonrisa <span class="c-op">==</span> <span class="c-bool">true</span>) {<br>
+            &nbsp;&nbsp;mi_corazon<span class="c-op">++</span>;<br>
+            }<br>
+            <br>
+            <span class="c-cmt">// siempre es true 💜</span>
+          </div>
+        </div>
+
+        <div class="poem-card">
+          <div class="poem-header">
+            <div class="poem-dot poem-dot-p"></div>
+            <div class="poem-dot poem-dot-y"></div>
+            <div class="poem-dot poem-dot-g"></div>
+            <span style="margin-left:8px;">poem_02.sql</span>
+          </div>
+          <div class="poem-body">
+            <span class="sql-kw2">SELECT</span> amor<br>
+            <span class="sql-kw2">FROM</span> <span class="sql-tbl">mi_corazon</span><br>
+            <span class="sql-kw2">WHERE</span> persona <span class="c-op">=</span><br>
+            &nbsp;&nbsp;<span class="c-str">'Tú'</span>;<br>
+            <span class="c-cmt">-- ∞ rows returned</span>
+          </div>
+        </div>
+
+        <div class="poem-card">
+          <div class="poem-header">
+            <div class="poem-dot poem-dot-p"></div>
+            <div class="poem-dot poem-dot-y"></div>
+            <div class="poem-dot poem-dot-g"></div>
+            <span style="margin-left:8px;">poem_03.sql</span>
+          </div>
+          <div class="poem-body">
+            <span class="sql-kw2">INSERT INTO</span><br>
+            &nbsp;&nbsp;<span class="sql-tbl">mi_vida</span> (persona)<br>
+            <span class="sql-kw2">VALUES</span> (<span class="c-str">'Tú'</span>);<br>
+            <br>
+            <span class="c-cmt">-- permanently 🌸</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FINAL -->
+    <div class="final-section">
+      <div class="section-title">fin.exe</div>
+
+      <p class="final-quote">
+        Entre millones de líneas de código en el mundo…<br>
+        me alegra que la tuya se cruzara con <em>la mía.</em>
+      </p>
+
+      <button class="btn-fav" id="btn-fav" onclick="saveFav()">
+        Guardar en favoritos ❤️
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ─── COMPILE ANIMATION ───
+  const lines = [
+    { prompt: '$', text: 'bash sorpresa_especial.sh', delay: 300, ok: false },
+    { prompt: '>', text: 'Compilando sentimientos...', delay: 900, ok: true, okText: '✓ OK' },
+    { prompt: '>', text: 'Cargando sonrisas...', delay: 1600, ok: true, okText: '✓ OK' },
+    { prompt: '>', text: 'Inicializando corazón...', delay: 2300, ok: true, okText: '✓ OK' },
+    { prompt: '>', text: 'Cargando fotos bonitas...', delay: 3000, ok: true, okText: '✓ OK' },
+    { prompt: '>', text: 'Procesando sentimientos...', delay: 3700, ok: true, okText: '✓ OK' },
+    { prompt: '>', text: 'Verificando que eres increíble...', delay: 4400, ok: true, okText: '✓ TRUE' },
+  ];
+
+  function startCompile() {
+    document.getElementById('screen-landing').style.display = 'none';
+    const sc = document.getElementById('screen-compile');
+    sc.style.display = 'flex';
+
+    const body = document.getElementById('terminal-body');
+
+    lines.forEach(({ prompt, text, delay, ok, okText }) => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = 't-line';
+        div.innerHTML = `
+          <span class="t-prompt">${prompt}</span>
+          <span class="t-text">${text}</span>
+          ${ok ? `<span class="t-ok">${okText}</span>` : ''}
+        `;
+        body.appendChild(div);
+        requestAnimationFrame(() => { div.classList.add('show'); });
+      }, delay);
+    });
+
+    // Progress bar
+    setTimeout(() => {
+      const wrap = document.createElement('div');
+      wrap.className = 'progress-bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'progress-bar';
+      wrap.appendChild(bar);
+      body.appendChild(wrap);
+      requestAnimationFrame(() => {
+        wrap.classList.add('show');
+        let w = 0;
+        const iv = setInterval(() => {
+          w += 2;
+          bar.style.width = w + '%';
+          if (w >= 100) clearInterval(iv);
+        }, 30);
+      });
+    }, 5000);
+
+    // Access granted
+    setTimeout(() => {
+      const msg = document.createElement('div');
+      msg.className = 'access-msg';
+      msg.innerHTML = '<span>Acceso concedido ❤️</span>';
+      body.appendChild(msg);
+      requestAnimationFrame(() => { msg.classList.add('show'); });
+    }, 6800);
+
+    // Transition to main
+    setTimeout(() => {
+      sc.style.display = 'none';
+      showMain();
+    }, 8000);
+  }
+
+  // ─── MAIN SCREEN ───
+  function showMain() {
+    const sc = document.getElementById('screen-main');
+    sc.style.display = 'block';
+    createStars();
+    createFloatingHearts();
+  }
+
+  function createStars() {
+    for (let i = 0; i < 60; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.cssText = `
+        left: ${Math.random()*100}vw;
+        top: ${Math.random()*100}vh;
+        animation-duration: ${2 + Math.random()*3}s;
+        animation-delay: ${Math.random()*3}s;
+        opacity: ${0.1 + Math.random()*0.3};
+      `;
+      document.getElementById('screen-main').appendChild(star);
+    }
+  }
+
+  function createFloatingHearts() {
+    const container = document.getElementById('heart-container');
+    const icons = ['💜','🌸','✨','💫','🌷','💕','🩷','🌺'];
+    for (let i = 0; i < 18; i++) {
+      const h = document.createElement('div');
+      h.className = 'fheart';
+      h.textContent = icons[Math.floor(Math.random()*icons.length)];
+      h.style.cssText = `
+        left: ${Math.random()*100}%;
+        animation-duration: ${8 + Math.random()*12}s;
+        animation-delay: ${Math.random()*8}s;
+        font-size: ${12 + Math.random()*16}px;
+      `;
+      container.appendChild(h);
+    }
+  }
+
+  // ─── SAVE FAV ───
+  function saveFav() {
+    const btn = document.getElementById('btn-fav');
+    btn.textContent = '✓ Guardado para siempre 💜';
+    btn.classList.add('saved');
+
+    // Extra heart burst
+    const container = document.getElementById('heart-container');
+    for (let i = 0; i < 12; i++) {
+      setTimeout(() => {
+        const h = document.createElement('div');
+        h.className = 'fheart';
+        h.textContent = ['💜','🌸','✨','💕'][Math.floor(Math.random()*4)];
+        h.style.cssText = `
+          left: ${20 + Math.random()*60}%;
+          animation-duration: 4s;
+          animation-delay: 0s;
+          font-size: ${20 + Math.random()*20}px;
+        `;
+        container.appendChild(h);
+        setTimeout(() => h.remove(), 4500);
+      }, i * 100);
+    }
+  }
+</script>
+</body>
+</html>
